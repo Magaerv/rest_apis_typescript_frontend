@@ -11,7 +11,7 @@ export async function addProduct(data: ProductData) {
 		const result = safeParse(DraftProductSchema, {
 			name: data.name,
 			price: +data.price,
-			availability: data.availability,
+			//availability: data.availability,
 			gender: data.gender,
 			description: data.description,
 			quantity: +data.quantity,
@@ -26,7 +26,7 @@ export async function addProduct(data: ProductData) {
 			const { data } = await axios.post(url, {
 				name: result.output.name,
 				price: result.output.price,
-				availability: result.output.availability,
+				//	availability: result.output.availability,
 				gender: result.output.gender,
 				description: result.output.description,
 				quantity: result.output.quantity,

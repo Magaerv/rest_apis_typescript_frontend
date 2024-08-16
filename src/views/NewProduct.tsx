@@ -63,7 +63,7 @@ const NewProduct = () => {
 						name='price'
 					/>
 				</div>
-				<div className='mb-4'>
+				{/*<div className='mb-4'>
 					<label className='text-gray-800' htmlFor='availability'>
 						Disponibilidad:
 					</label>
@@ -75,7 +75,7 @@ const NewProduct = () => {
 						<option value='true'>Disponible</option>
 						<option value='false'>No disponible</option>
 					</select>
-				</div>
+				</div>*/}
 				<div className='mb-4'>
 					<label className='text-gray-800' htmlFor='gender'>
 						Género:
