@@ -4,11 +4,27 @@ import {
 	useActionData,
 	redirect,
 	ActionFunctionArgs,
+	LoaderFunctionArgs,
+	useLoaderData,
 } from 'react-router-dom';
 import ErrorMessage from '../components/ErrorMessage';
-import { addProduct } from '../services/ProductService.ts';
+import { getProductById, updateProduct } from '../services/ProductService.ts';
+import { Product } from '../types/index.ts';
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
+	if (params.id !== undefined) {
+		const product = await getProductById(+params.id);
+		if (!product) {
+			throw new Response('', {
+				status: 404,
+				statusText: 'Producto no encontrado',
+			});
+		}
+		return product;
+	}
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
 	const data = Object.fromEntries(await request.formData());
 	let error = '';
 	if (Object.values(data).includes('')) {
@@ -17,19 +33,26 @@ export async function action({ request }: ActionFunctionArgs) {
 	if (error.length) {
 		return error;
 	}
-	await addProduct(data);
-	return redirect('/');
+
+	if (params.id !== undefined) {
+		await updateProduct(data, +params.id);
+		return redirect('/');
+	}
 }
 
-const NewProduct = () => {
+const availabilityOptions = [
+	{ name: 'Disponible', value: true },
+	{ name: 'No Disponible', value: false },
+];
+
+const EditProduct = () => {
+	const product = useLoaderData() as Product;
 	const error = useActionData() as string;
 
 	return (
 		<>
 			<div className='flex justify-between'>
-				<h2 className='text-4xl font-black text-slate-500'>
-					Registrar Producto
-				</h2>
+				<h2 className='text-4xl font-black text-slate-500'>Editar Producto</h2>
 				<Link
 					to='/'
 					className='rounded-md bg-indigo-600 p-3 text-sm font-bold text-white shadow-sm hover:bg-indigo-500'
@@ -49,6 +72,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='Nombre del Producto'
 						name='name'
+						defaultValue={product.name}
 					/>
 				</div>
 				<div className='mb-4'>
@@ -61,6 +85,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='Precio Producto. ej. 200, 300'
 						name='price'
+						defaultValue={product.price}
 					/>
 				</div>
 				<div className='mb-4'>
@@ -71,9 +96,13 @@ const NewProduct = () => {
 						id='availability'
 						className='mt-2 block w-full p-3 bg-gray-50'
 						name='availability'
+						defaultValue={product?.availability.toString()}
 					>
-						<option value='true'>Disponible</option>
-						<option value='false'>No disponible</option>
+						{availabilityOptions.map(option => (
+							<option key={option.name} value={option.value.toString()}>
+								{option.name}
+							</option>
+						))}
 					</select>
 				</div>
 				<div className='mb-4'>
@@ -84,6 +113,7 @@ const NewProduct = () => {
 						id='gender'
 						className='mt-2 block w-full p-3 bg-gray-50'
 						name='gender'
+						defaultValue={product.gender}
 					>
 						<option value='femenino'>Femenino</option>
 						<option value='masculino'>Masculino</option>
@@ -99,6 +129,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='Descripción del Producto'
 						name='description'
+						defaultValue={product.description}
 					></textarea>
 				</div>
 				<div className='mb-4'>
@@ -111,6 +142,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='Cantidad'
 						name='quantity'
+						defaultValue={product.quantity}
 					/>
 				</div>
 				<div className='mb-4'>
@@ -123,6 +155,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='URL de la Imagen'
 						name='imageUrl'
+						defaultValue={product.imageUrl}
 					/>
 				</div>
 				<div className='mb-4'>
@@ -135,6 +168,7 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='ID de Categoría'
 						name='categoryId'
+						defaultValue={product.categoryId}
 					/>
 				</div>
 				<div className='mb-4'>
@@ -147,16 +181,17 @@ const NewProduct = () => {
 						className='mt-2 block w-full p-3 bg-gray-50'
 						placeholder='ID de Subcategoría'
 						name='subcategoryId'
+						defaultValue={product.subcategoryId}
 					/>
 				</div>
 				<input
 					type='submit'
 					className='mt-5 w-full bg-indigo-600 p-2 text-white font-bold text-lg cursor-pointer rounded'
-					value='Registrar Producto'
+					value='Guardar Cambios'
 				/>
 			</Form>
 		</>
 	);
 };
 
-export default NewProduct;
+export default EditProduct;
